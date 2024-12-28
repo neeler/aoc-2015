@@ -1,3 +1,5 @@
+import { Queue } from '~/types/Queue';
+
 export class Graph {
     nodes = new Set<GraphNode>();
     nodesByName = new Map<string, GraphNode>();
@@ -6,6 +8,20 @@ export class Graph {
     addNode(node: GraphNode) {
         this.nodes.add(node);
         this.nodesByName.set(node.name, node);
+    }
+
+    addNodeByName(name: string) {
+        const node = this.getNodeByName(name) ?? new GraphNode(name);
+        this.addNode(node);
+        return node;
+    }
+
+    getNodeByName(name: string) {
+        return this.nodesByName.get(name);
+    }
+
+    getDistance(node1: GraphNode, node2: GraphNode) {
+        return this.distances.get(node1.name)?.get(node2.name) ?? Infinity;
     }
 
     linkNodes(node1: GraphNode, node2: GraphNode, distance: number) {
@@ -18,15 +34,14 @@ export class Graph {
             this.distances.set(node2.name, new Map());
         }
         this.distances.get(node2.name)!.set(node1.name, distance);
+
+        node1.linkTo(node2, distance);
+        node2.linkTo(node1, distance);
     }
 
     linkNodesByName(n1: string, n2: string, distance: number) {
-        const node1 = this.nodesByName.get(n1) ?? new GraphNode(n1);
-        const node2 = this.nodesByName.get(n2) ?? new GraphNode(n2);
-        this.addNode(node1);
-        this.addNode(node2);
-        this.nodesByName.set(n1, node1);
-        this.nodesByName.set(n2, node2);
+        const node1 = this.addNodeByName(n1);
+        const node2 = this.addNodeByName(n2);
         this.linkNodes(node1, node2, distance);
         node1.linkTo(node2, distance);
         node2.linkTo(node1, distance);
