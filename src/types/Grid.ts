@@ -280,7 +280,7 @@ export class Grid<T> {
         return undefined;
     }
 
-    getCoordsInDirection(
+    static getCoordsInDirection(
         row: number,
         col: number,
         direction: Direction,
@@ -444,7 +444,7 @@ ${this.toString(drawFn)}
     }
 }
 
-export class GridPosSet extends CustomSet<{ row: number; col: number }> {
+export class GridCoordinateSet extends CustomSet<GridCoordinate> {
     constructor() {
         super({
             getKey: (point) => `${point.row},${point.col}`,
