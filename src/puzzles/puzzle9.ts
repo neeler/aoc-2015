@@ -1,7 +1,6 @@
 import { Puzzle } from './Puzzle';
 import { splitFilter } from '~/util/parsing';
-import { Graph, GraphNode } from '~/types/Graph';
-import { Queue } from '~/types/Queue';
+import { Graph } from '~/types/Graph';
 
 export const puzzle9 = new Puzzle({
     day: 9,
@@ -26,69 +25,17 @@ export const puzzle9 = new Puzzle({
         return graph;
     },
     part1: (graph) => {
-        const queue = new Queue<{
-            nodesVisited: Set<GraphNode>;
-            currentNode: GraphNode;
-            distance: number;
-        }>();
-        graph.forEachNode((node) => {
-            queue.add({
-                nodesVisited: new Set([node]),
-                currentNode: node,
-                distance: 0,
-            });
+        return graph.getOptimalFullPath({
+            priorityCompare: (a, b) => a - b,
+            initialStat: Infinity,
+            statCompare: (a, b) => Math.min(a, b),
         });
-        let shortestRoute = Infinity;
-        queue.process(({ nodesVisited, currentNode, distance }) => {
-            if (nodesVisited.size === graph.size) {
-                shortestRoute = Math.min(distance, shortestRoute);
-                return;
-            }
-
-            currentNode.forEachNeighbor((neighbor, distanceToNeighbor) => {
-                if (nodesVisited.has(neighbor)) {
-                    return;
-                }
-                queue.add({
-                    nodesVisited: new Set([...nodesVisited, neighbor]),
-                    currentNode: neighbor,
-                    distance: distance + distanceToNeighbor,
-                });
-            });
-        });
-        return shortestRoute;
     },
     part2: (graph) => {
-        const queue = new Queue<{
-            nodesVisited: Set<GraphNode>;
-            currentNode: GraphNode;
-            distance: number;
-        }>();
-        graph.forEachNode((node) => {
-            queue.add({
-                nodesVisited: new Set([node]),
-                currentNode: node,
-                distance: 0,
-            });
+        return graph.getOptimalFullPath({
+            priorityCompare: (a, b) => b - a,
+            initialStat: 0,
+            statCompare: (a, b) => Math.max(a, b),
         });
-        let longestRoute = 0;
-        queue.process(({ nodesVisited, currentNode, distance }) => {
-            if (nodesVisited.size === graph.size) {
-                longestRoute = Math.max(distance, longestRoute);
-                return;
-            }
-
-            currentNode.forEachNeighbor((neighbor, distanceToNeighbor) => {
-                if (nodesVisited.has(neighbor)) {
-                    return;
-                }
-                queue.add({
-                    nodesVisited: new Set([...nodesVisited, neighbor]),
-                    currentNode: neighbor,
-                    distance: distance + distanceToNeighbor,
-                });
-            });
-        });
-        return longestRoute;
     },
 });

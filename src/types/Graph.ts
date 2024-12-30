@@ -1,4 +1,5 @@
 import { Queue } from '~/types/Queue';
+import { PriorityQueue } from '~/types/PriorityQueue';
 
 export class Graph {
     nodes = new Set<GraphNode>();
@@ -53,6 +54,101 @@ export class Graph {
 
     get size() {
         return this.nodes.size;
+    }
+
+    /**
+     * Dijkstra's algorithm
+     */
+    getShortestPath({
+        startingNode,
+        targetNode,
+    }: {
+        startingNode: GraphNode;
+        targetNode: GraphNode;
+    }) {
+        const start = startingNode ?? [...this.nodes][0]!;
+        const unvisitedNodes = new Set(this.nodes);
+        const distances = new Map<GraphNode, number>();
+        this.nodes.forEach((node) =>
+            distances.set(node, node === start ? 0 : Infinity),
+        );
+        while (unvisitedNodes.size > 0) {
+            const currentNode = [...unvisitedNodes].reduce((a, b) =>
+                distances.get(a)! < distances.get(b)! ? a : b,
+            );
+            if (
+                currentNode === targetNode ||
+                distances.get(currentNode) === Infinity
+            ) {
+                break;
+            }
+
+            currentNode.forEachNeighbor((neighbor, distanceToNeighbor) => {
+                if (!unvisitedNodes.has(neighbor)) {
+                    return;
+                }
+                distances.set(
+                    neighbor,
+                    Math.min(
+                        distances.get(neighbor)!,
+                        distances.get(currentNode)! + distanceToNeighbor,
+                    ),
+                );
+            });
+
+            unvisitedNodes.delete(currentNode);
+        }
+
+        return distances.get(targetNode)!;
+    }
+
+    /**
+     * Traveling Salesman Problem
+     * Allows for custom priority and stat comparison functions,
+     * for example to find the shortest or longest path.
+     */
+    getOptimalFullPath({
+        priorityCompare,
+        initialStat,
+        statCompare,
+    }: {
+        priorityCompare: (a: number, b: number) => number;
+        initialStat: number;
+        statCompare: (a: number, b: number) => number;
+    }) {
+        const queue = new PriorityQueue<{
+            nodesVisited: Set<GraphNode>;
+            currentNode: GraphNode;
+            distance: number;
+        }>({
+            compare: (a, b) => priorityCompare(a.distance, b.distance),
+        });
+        this.forEachNode((node) => {
+            queue.add({
+                nodesVisited: new Set([node]),
+                currentNode: node,
+                distance: 0,
+            });
+        });
+        let bestStat = initialStat;
+        queue.process(({ nodesVisited, currentNode, distance }) => {
+            if (nodesVisited.size === this.size) {
+                bestStat = statCompare(distance, bestStat);
+                return;
+            }
+
+            currentNode.forEachNeighbor((neighbor, distanceToNeighbor) => {
+                if (nodesVisited.has(neighbor)) {
+                    return;
+                }
+                queue.add({
+                    nodesVisited: new Set([...nodesVisited, neighbor]),
+                    currentNode: neighbor,
+                    distance: distance + distanceToNeighbor,
+                });
+            });
+        });
+        return bestStat;
     }
 }
 
