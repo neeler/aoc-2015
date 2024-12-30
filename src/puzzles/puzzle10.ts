@@ -4,7 +4,7 @@ import { splitFilter } from '~/util/parsing';
 export const puzzle10 = new Puzzle({
     day: 10,
     parseInput: (fileData) => {
-        return splitFilter(fileData)[0]!;
+        return splitFilter(fileData, '').map(Number);
     },
     part1: (input) => {
         return lookAndSay(input, 40).length;
@@ -14,31 +14,31 @@ export const puzzle10 = new Puzzle({
     },
 });
 
-function lookAndSay(input: string, iterations = 1): string {
+function lookAndSay(input: number[], iterations = 1): number[] {
     if (!input.length) {
-        return '';
+        return [];
     }
 
     if (iterations === 0) {
         return input;
     }
 
-    const numbers = input.split('').map(Number);
-
-    let newString = '';
+    let nextNums: number[] = [];
     let count = 1;
-    let currentNumber = numbers[0]!;
+    let currentNumber = input[0]!;
 
-    for (const n of numbers.slice(1)) {
+    for (let i = 1; i < input.length; i++) {
+        const n = input[i]!;
         if (n === currentNumber) {
             count++;
         } else {
-            newString += `${count}${currentNumber}`;
+            nextNums.push(count, currentNumber);
             count = 1;
             currentNumber = n;
         }
     }
-    newString += `${count}${currentNumber}`;
 
-    return lookAndSay(newString, iterations - 1);
+    nextNums.push(count, currentNumber);
+
+    return lookAndSay(nextNums, iterations - 1);
 }
