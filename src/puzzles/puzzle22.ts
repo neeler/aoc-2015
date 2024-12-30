@@ -1,6 +1,6 @@
 import { Puzzle } from './Puzzle';
 import { getMultilineNumbers } from '~/util/parsing';
-import { Queue } from '~/types/Queue';
+import { PriorityQueue } from '~/types/PriorityQueue';
 
 interface Boss {
     hp: number;
@@ -73,14 +73,16 @@ function getMinManaToWin({
     boss: Boss;
     mode?: 'normal' | 'hard';
 }) {
-    const queue = new Queue<{
+    const queue = new PriorityQueue<{
         player: Player;
         boss: Boss;
         playerEffects: Effect[];
         bossEffects: Effect[];
         manaSpent: number;
         turn: 'player' | 'boss';
-    }>();
+    }>({
+        compare: (a, b) => a.manaSpent - b.manaSpent,
+    });
     queue.add({
         player: startingPlayer,
         boss,
