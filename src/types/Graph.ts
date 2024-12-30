@@ -111,40 +111,63 @@ export class Graph {
         priorityCompare,
         initialStat,
         statCompare,
+        returnToStart = false,
     }: {
         priorityCompare: (a: number, b: number) => number;
         initialStat: number;
         statCompare: (a: number, b: number) => number;
+        returnToStart?: boolean;
     }) {
         const queue = new PriorityQueue<{
             nodesVisited: Set<GraphNode>;
             currentNode: GraphNode;
             distance: number;
+            startNode: GraphNode;
         }>({
             compare: (a, b) => priorityCompare(a.distance, b.distance),
         });
-        this.forEachNode((node) => {
+        if (returnToStart) {
+            const firstNode = [...this.nodes][0]!;
             queue.add({
-                nodesVisited: new Set([node]),
-                currentNode: node,
+                nodesVisited: new Set([firstNode]),
+                currentNode: firstNode,
                 distance: 0,
+                startNode: firstNode,
             });
-        });
+        } else {
+            this.forEachNode((node) => {
+                queue.add({
+                    nodesVisited: new Set([node]),
+                    currentNode: node,
+                    distance: 0,
+                    startNode: node,
+                });
+            });
+        }
         let bestStat = initialStat;
-        queue.process(({ nodesVisited, currentNode, distance }) => {
-            if (nodesVisited.size === this.size) {
+        queue.process(({ nodesVisited, currentNode, distance, startNode }) => {
+            if (
+                nodesVisited.size === this.size &&
+                (!returnToStart || currentNode === startNode)
+            ) {
                 bestStat = statCompare(distance, bestStat);
                 return;
             }
 
             currentNode.forEachNeighbor((neighbor, distanceToNeighbor) => {
-                if (nodesVisited.has(neighbor)) {
+                if (
+                    nodesVisited.has(neighbor) &&
+                    (!returnToStart ||
+                        neighbor !== startNode ||
+                        nodesVisited.size !== this.size)
+                ) {
                     return;
                 }
                 queue.add({
                     nodesVisited: new Set([...nodesVisited, neighbor]),
                     currentNode: neighbor,
                     distance: distance + distanceToNeighbor,
+                    startNode,
                 });
             });
         });

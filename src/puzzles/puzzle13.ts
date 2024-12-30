@@ -1,7 +1,6 @@
 import { Puzzle } from './Puzzle';
 import { splitFilter } from '~/util/parsing';
-import { Queue } from '~/types/Queue';
-import { Graph, GraphNode } from '~/types/Graph';
+import { Graph } from '~/types/Graph';
 
 export const puzzle13 = new Puzzle({
     day: 13,
@@ -43,57 +42,27 @@ export const puzzle13 = new Puzzle({
                 graph.linkNodesByName(person, neighbor, distance);
             }
         }
-        return {
-            rulesByPeople,
-            people,
-            graph,
-        };
+        return graph;
     },
-    part1: ({ graph }) => {
-        return walkGraphForMaxHappiness(graph);
+    part1: (graph) => {
+        return graph.getOptimalFullPath({
+            priorityCompare: (a, b) => b - a,
+            initialStat: -Infinity,
+            statCompare: (a, b) => Math.max(a, b),
+            returnToStart: true,
+        });
     },
-    part2: ({ graph }) => {
+    part2: (graph) => {
         const me = graph.addNodeByName('Me');
         graph.forEachNode((node) => {
             if (node === me) return;
             graph.linkNodes(me, node, 0);
         });
-        return walkGraphForMaxHappiness(graph);
+        return graph.getOptimalFullPath({
+            priorityCompare: (a, b) => b - a,
+            initialStat: -Infinity,
+            statCompare: (a, b) => Math.max(a, b),
+            returnToStart: true,
+        });
     },
 });
-
-function walkGraphForMaxHappiness(graph: Graph) {
-    const queue = new Queue<{
-        nodesVisited: Set<GraphNode>;
-        currentNode: GraphNode;
-        distance: number;
-    }>();
-    const startNode = graph.nodes.values().next().value!;
-    queue.add({
-        nodesVisited: new Set([startNode]),
-        currentNode: startNode,
-        distance: 0,
-    });
-    let maxHappiness = -Infinity;
-    queue.process(({ nodesVisited, currentNode, distance }) => {
-        if (currentNode === startNode && nodesVisited.size === graph.size) {
-            maxHappiness = Math.max(distance, maxHappiness);
-            return;
-        }
-
-        currentNode.forEachNeighbor((neighbor, distanceToNeighbor) => {
-            if (
-                nodesVisited.has(neighbor) &&
-                (neighbor !== startNode || nodesVisited.size !== graph.size)
-            ) {
-                return;
-            }
-            queue.add({
-                nodesVisited: new Set([...nodesVisited, neighbor]),
-                currentNode: neighbor,
-                distance: distance + distanceToNeighbor,
-            });
-        });
-    });
-    return maxHappiness;
-}
