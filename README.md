@@ -1,5 +1,9 @@
 # AoC 2015
 
+### Completed!
+
+All puzzles together run in ~11s cumulatively on my M2 MacBook Air. 🎉
+
 ## Initial Setup
 
 Just cloned the repo? Follow these instructions to get set up.
