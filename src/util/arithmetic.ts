@@ -38,3 +38,21 @@ export function lcm(a: number, b: number) {
 export function mod(n: number, modulus: number) {
     return ((n % modulus) + modulus) % modulus;
 }
+
+/**
+ * Finds all factors of n.
+ */
+export function findFactors(n: number) {
+    let factors = new Set<number>();
+
+    for (let i = 1; i <= Math.sqrt(n); i++) {
+        if (n % i === 0) {
+            factors.add(i);
+            if (i !== n / i) {
+                factors.add(n / i);
+            }
+        }
+    }
+
+    return factors;
+}
